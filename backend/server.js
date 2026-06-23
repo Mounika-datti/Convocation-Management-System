@@ -17,11 +17,13 @@ const app = express();
 // Middlewares
 // ======================
 
+const cors = require("cors");
+
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "https://convocation-management-system.vercel.app/"
+      "https://convocation-management-system.vercel.app",
+      "http://localhost:5173"
     ],
     credentials: true,
   })
