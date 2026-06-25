@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../components/AdminSidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import api from "../services/api";
 
 function ManagePayments() {
