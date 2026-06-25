@@ -413,7 +413,7 @@ hall_block=$2,
 
 row_number=$3,
 
-convocation_id=$4,
+convocation_id=$4
 
 WHERE student_id=$5
 
