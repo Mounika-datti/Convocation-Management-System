@@ -92,64 +92,6 @@ function StudentQRCode() {
         {/* Main Card */}
 
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-
-          {/* Student Details */}
-
-          <div className="p-8 border-b">
-
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Student Details
-              </h2>
-              <Link
-                to="/qr-scanner"
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-              >
-                <FaCamera size={18} />
-                Scan QR
-              </Link>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-
-              <div>
-                <p className="mb-3">
-                  <strong>Name:</strong>{" "}
-                  {qrData?.full_name}
-                </p>
-
-                <p className="mb-3">
-                  <strong>Hall Ticket:</strong>{" "}
-                  {qrData?.hall_ticket_no}
-                </p>
-
-                <p className="mb-3">
-                  <strong>Program:</strong>{" "}
-                  {qrData?.program}
-                </p>
-              </div>
-
-              <div>
-                <p className="mb-3">
-                  <strong>Seat Number:</strong>{" "}
-                  {qrData?.seat_number}
-                </p>
-
-                <p className="mb-3">
-                  <strong>Hall Block:</strong>{" "}
-                  {qrData?.hall_block}
-                </p>
-
-                <p className="mb-3">
-                  <strong>Row Number:</strong>{" "}
-                  {qrData?.row_number}
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
           {/* QR Section */}
 
           <div className="p-10 flex flex-col items-center">
