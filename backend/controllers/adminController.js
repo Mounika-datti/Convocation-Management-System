@@ -368,7 +368,7 @@ const convocationId = `CONV-${year}-${String(nextSeat).padStart(4, "0")}`;
 // ===========================
 
 const verificationUrl =
-`http://localhost:5173/verify/${convocationId}`;
+`https://convocation-management-system.vercel.app/verify/${convocationId}`;
 
 const qrCode = await QRCode.toDataURL(verificationUrl);
 
