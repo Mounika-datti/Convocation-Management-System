@@ -140,7 +140,13 @@ function StudentProfile() {
                 {student?.college_name}
               </p>
             </div>
-
+             <div className="bg-blue-50 rounded-xl p-5">
+  <p className="flex items-center gap-3">
+    <FaGraduationCap />
+    <strong>Batch:</strong>
+    {student?.batch}
+  </p>
+  </div>
             <div className="bg-blue-50 rounded-xl p-5">
               <p>
                 <strong>Graduation Year:</strong>{" "}

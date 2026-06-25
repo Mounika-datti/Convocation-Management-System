@@ -35,6 +35,7 @@ function Register() {
       degree: "",
       department: "",
       college_name: "",
+      batch: "",
       graduation_year: "",
       address: "",
     });
@@ -47,7 +48,7 @@ function Register() {
     });
   };
 
-  const degreeOptions = ["B.Tech", "M.Tech", "B.Sc", "M.Sc", "MBA","Pharmacy"];
+  const degreeOptions = ["B.Tech", "PHD"];
   const programOptions = ["UG", "PG"];
   const departmentOptions = ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical", "IT"];
 
@@ -97,7 +98,9 @@ function Register() {
 
         college_name:
           formData.college_name,
-
+        
+        batch:
+         formData.batch,
         graduation_year:
           formData.graduation_year,
 
@@ -273,6 +276,19 @@ function Register() {
                 className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
               />
 
+<div>
+    <label>Batch</label>
+
+    <input
+        type="text"
+        name="batch"
+        value={formData.batch}
+        onChange={handleChange}
+        placeholder="2022-2026"
+        required
+        className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+    />
+</div>
               <input
                 type="number"
                 name="graduation_year"

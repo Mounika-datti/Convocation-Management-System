@@ -22,6 +22,8 @@ import ManageStudents from "../pages/ManageStudents";
 import VerifyDocuments from "../pages/VerifyDocuments";
 import AdminNotifications from "../pages/AdminNotifications";
 import StudentQRCode from "../pages/StudentQRCode";
+import QRScanner from "../pages/QRScanner";
+import VerifyPage from "../pages/VerifyPage";
 
 function AppRoutes() {
   return (
@@ -49,7 +51,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+<Route
+  path="/verify/:convocationId"
+  element={<VerifyPage />}
+/>
 <Route
   path="/manage-events"
   element={
@@ -120,6 +125,14 @@ function AppRoutes() {
 <Route
   path="/student-qr"
   element={<StudentQRCode />}
+/>
+<Route
+  path="/qr-scanner"
+  element={
+    <ProtectedRoute>
+      <QRScanner />
+    </ProtectedRoute>
+  }
 />
 <Route
   path="/reports"

@@ -21,6 +21,7 @@ exports.register = async (req, res) => {
       degree,
       department,
       college_name,
+      batch,
       graduation_year,
       address
     } = req.body;
@@ -79,7 +80,8 @@ exports.register = async (req, res) => {
       await bcrypt.hash(password, 10);
 
     // Insert Student
-
+  console.log("REQ BODY:", req.body);
+console.log("BATCH VALUE:", batch);
     await pool.query(
 
       `INSERT INTO students
@@ -94,13 +96,14 @@ exports.register = async (req, res) => {
         degree,
         department,
         college_name,
+        batch,
         graduation_year,
         address
       )
 
       VALUES
 
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
 
       [
         full_name,
@@ -113,6 +116,7 @@ exports.register = async (req, res) => {
         degree,
         department,
         college_name,
+        batch,
         graduation_year,
         address
       ]

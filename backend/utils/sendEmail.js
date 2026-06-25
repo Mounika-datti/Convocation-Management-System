@@ -6,7 +6,9 @@ const sendEmail = async (to, subject, html) => {
     console.log("================================");
     console.log("SEND EMAIL FUNCTION CALLED");
     console.log("TO:", to);
+    console.log("SUBJECT:", subject);
     console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "***configured***" : "NOT SET");
     console.log("================================");
 
     const transporter = nodemailer.createTransport({
@@ -17,6 +19,8 @@ const sendEmail = async (to, subject, html) => {
       },
     });
 
+    console.log("📧 Transporter created, sending email...");
+
     const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to,
@@ -24,17 +28,19 @@ const sendEmail = async (to, subject, html) => {
       html,
     });
 
-    console.log("EMAIL SENT SUCCESSFULLY");
-    console.log(info.messageId);
+    console.log("✅ EMAIL SENT SUCCESSFULLY");
+    console.log("Message ID:", info.messageId);
 
     return true;
 
   } catch (error) {
 
-    console.log("EMAIL ERROR");
-    console.log(error);
+    console.error("❌ EMAIL ERROR");
+    console.error("Error Code:", error.code);
+    console.error("Error Message:", error.message);
+    console.error("Full Error:", error);
 
-    throw error;
+    return false;
   }
 };
 

@@ -99,11 +99,16 @@ function VerifyDocuments() {
 
  const handleApprove = async (studentId) => {
   try {
+    // First approve the registration (must complete first)
     await approveRegistration(studentId);
-    await allocateSeat(studentId);
-    await generateQR(studentId);
-    alert("Approved and certificate generated successfully");
-        alert(
+    
+    // Then run seat allocation and QR generation in parallel
+    await Promise.all([
+      allocateSeat(studentId),
+      generateQR(studentId)
+    ]);
+
+    alert(
       "Approved, Seat Allocated and Certificate Generated"
     );
 
@@ -112,7 +117,7 @@ function VerifyDocuments() {
     console.log(error);
     alert(
       error?.response?.data?.message ||
-        "Failed to generate certificate."
+        "Failed to approve and process."
     );
   }
 };

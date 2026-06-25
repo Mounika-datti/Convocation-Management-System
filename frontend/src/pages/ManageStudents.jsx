@@ -176,7 +176,9 @@ const handleDelete = async (studentId, studentName) => {
                   <th className="p-4">
                     Department
                   </th>
-
+                   <th className="p-4">
+  Batch
+</th>
                   <th className="p-4">
                     Graduation Year
                   </th>
@@ -198,7 +200,7 @@ const handleDelete = async (studentId, studentName) => {
                   <tr>
 
                     <td
-                      colSpan="10"
+                      colSpan="11"
                       className="text-center p-10"
                     >
                       No Students Found
@@ -242,7 +244,9 @@ const handleDelete = async (studentId, studentName) => {
                       <td className="p-4">
                         {student.department}
                       </td>
-
+                     <td className="p-4">
+  {student.batch}
+</td>
                       <td className="p-4">
                         {student.graduation_year}
                       </td>

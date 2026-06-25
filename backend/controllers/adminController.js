@@ -168,6 +168,7 @@ exports.getAllRegistrations = async (req, res) => {
       students.degree,
 
       students.department,
+      students.batch,
 
       registrations.session_id,
 
@@ -204,91 +205,7 @@ exports.getAllRegistrations = async (req, res) => {
   }
 
 };
-exports.generateQR = async (req, res) => {
-  try {
 
-    const studentId = req.params.id;
-
-    const result = await pool.query(
-      `
-      SELECT
-      s.id,
-      s.full_name,
-      s.program,
-
-      r.seat_number,
-      r.hall_block,
-      r.row_number
-
-      FROM students s
-
-      JOIN registrations r
-      ON s.id = r.student_id
-
-      WHERE s.id = $1
-      `,
-      [studentId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success:false,
-        message:"Student not found"
-      });
-    }
-
-    const student = result.rows[0];
-
-    const qrData = {
-      convocation_id:
-        `CONV-${student.id}`,
-
-      student_id:
-        student.id,
-
-      student_name:
-        student.full_name,
-
-      seat_number:
-        student.seat_number,
-
-      hall_block:
-        student.hall_block,
-
-      row_number:
-        student.row_number
-    };
-
-    const qrCode =
-      await QRCode.toDataURL(
-        JSON.stringify(qrData)
-      );
-
-    await pool.query(
-      `
-      UPDATE registrations
-
-      SET qr_code=$1
-
-      WHERE student_id=$2
-      `,
-      [qrCode, studentId]
-    );
-
-    res.json({
-      success:true,
-      qr_code:qrCode
-    });
-
-  } catch(error){
-
-    res.status(500).json({
-      success:false,
-      message:error.message
-    });
-
-  }
-};
 exports.generateQR = async (req, res) => {
   try {
 
@@ -303,6 +220,7 @@ exports.generateQR = async (req, res) => {
       SELECT
       s.id,
       s.full_name,
+      s.email,
       s.program,
       r.seat_number,
       r.hall_block,
@@ -338,78 +256,57 @@ exports.generateQR = async (req, res) => {
 
     console.log("QR DATA:", qrData);
 
-    const qrCode = await QRCode.toDataURL(
-      JSON.stringify(qrData)
-    );
+    const verificationUrl =
+`http://localhost:5173/verify/CONV-${student.id}`;
+
+const qrCode = await QRCode.toDataURL(
+  verificationUrl,
+  {
+    width: 500,
+    errorCorrectionLevel: "H"
+  }
+);
 
     console.log("QR GENERATED");
 
-    const updateResult = await pool.query(
-      `
-      UPDATE registrations
-      SET qr_code=$1
-      WHERE student_id=$2
-      RETURNING *
-      `,
-      [qrCode, studentId]
-    );
-    const studentInfo = await pool.query(
-  `
-  SELECT
-  full_name,
-  email
-  FROM students
-  WHERE id = $1
-  `,
-  [studentId]
-);
+    // Run database update and email in parallel
+    await Promise.all([
+      pool.query(
+        `
+        UPDATE registrations
+        SET qr_code=$1
+        WHERE student_id=$2
+        RETURNING *
+        `,
+        [qrCode, studentId]
+      ),
+      // Send email asynchronously (fire and forget)
+      (async () => {
+        try {
+          console.log("📧 Attempting to send QR email to:", student.email);
+          await sendEmail(
+            student.email,
+            "QR Entry Pass Generated",
+            `
+            <div style="font-family:Arial;padding:20px">
+              <h2 style="color:green;">QR Entry Pass Generated</h2>
+              <p>Dear ${student.full_name},</p>
+              <p>Your Convocation QR Entry Pass has been generated successfully.</p>
+              <p>Please login to the portal and view your QR Entry Pass.</p>
+              <p>This QR Code is required for entry into the Convocation Hall.</p>
+              <br>
+              <p>Regards,<br/>JNTU-GV Convocation Team</p>
+            </div>
+            `
+          );
+          console.log("✅ QR email sent successfully");
+        } catch (err) {
+          console.error("❌ Failed to send QR email:", err);
+        }
+      })()
+    ]);
 
-const studentDetails = studentInfo.rows[0];
-
-await sendEmail(
-
-  studentDetails.email,
-
-  "QR Entry Pass Generated",
-
-  `
-  <div style="font-family:Arial;padding:20px">
-
-    <h2 style="color:green;">
-      QR Entry Pass Generated
-    </h2>
-
-    <p>
-      Dear ${student.full_name},
-    </p>
-
-    <p>
-      Your Convocation QR Entry Pass
-      has been generated successfully.
-    </p>
-
-    <p>
-      Please login to the portal and
-      view your QR Entry Pass.
-    </p>
-
-    <p>
-      This QR Code is required for
-      entry into the Convocation Hall.
-    </p>
-
-    <br>
-
-    <p>
-      Regards,<br/>
-      JNTU-GV Convocation Team
-    </p>
-
-  </div>
-  `
-);
-
-    console.log("UPDATE RESULT:", updateResult.rows);
+    console.log("UPDATE RESULT: Success");
 
     res.json({
       success:true,
@@ -435,106 +332,18 @@ exports.approveRegistration = async (req, res) => {
   try {
 
     const studentId = req.params.id;
-     const studentResult =
-await pool.query(
-`
-SELECT
-full_name,
-email
-FROM students
-WHERE id = $1
-`,
-[studentId]
-);
 
-const student =
-studentResult.rows[0];
-
-await sendEmail(
-
-  student.email,
-
-  "🎓 Convocation Registration Approved",
-
-  `
-  <div style="font-family: Arial; padding: 20px;">
-
-    <h2 style="color: green;">
-      Registration Approved
-    </h2>
-
-    <p>
-      Dear <strong>${student.full_name}</strong>,
-    </p>
-
-    <p>
-      Congratulations! Your Convocation Registration
-      has been approved successfully.
-    </p>
-
-    <p>
-      You can now login to the Convocation Portal
-      to view:
-    </p>
-
-    <ul>
-      <li>Registration Status</li>
-      <li>Seat Allocation</li>
-      <li>QR Entry Pass</li>
-      <li>Notifications</li>
-    </ul>
-
-    <hr>
-
-    <h3 style="color:#2563eb;">
-      Login Credentials
-    </h3>
-
-    <p>
-      <strong>Email:</strong>
-      ${student.email}
-    </p>
-
-    <p>
-      <strong>Password:</strong>
-      ${student.roll_no}
-    </p>
-
-    <p style="color:red;">
-      Please change your password after your first login.
-    </p>
-
-    <br>
-
-    <a
-      href="http://localhost:5173/login"
-      style="
-        background:#2563eb;
-        color:white;
-        padding:12px 25px;
-        text-decoration:none;
-        border-radius:8px;
-        font-weight:bold;
-      "
-    >
-      Login Now
-    </a>
-
-    <br><br>
-
-    <p>
-      Regards,<br>
-      Convocation Management Team
-    </p>
-
-  </div>
-  `
-);
+    // Check status and get student info in one query
     const statusResult = await pool.query(
       `
-      SELECT status
-      FROM registrations
-      WHERE student_id=$1
+      SELECT 
+        r.status,
+        s.full_name,
+        s.email,
+        s.roll_no
+      FROM registrations r
+      JOIN students s ON r.student_id = s.id
+      WHERE r.student_id = $1
       `,
       [studentId]
     );
@@ -546,58 +355,88 @@ await sendEmail(
       });
     }
 
-    const currentStatus = statusResult.rows[0].status;
+    const { status, full_name, email, roll_no } = statusResult.rows[0];
 
-    if (currentStatus === "Approved") {
+    if (status === "Approved") {
       return res.status(200).json({
         success: true,
         message: "Student is already approved.",
-        data: statusResult.rows[0],
       });
     }
 
-    const result = await pool.query(
-      `
-      UPDATE registrations
-      SET status='Approved'
-      WHERE student_id=$1
-      RETURNING *;
-      `,
-      [studentId]
-    );
-
-    await pool.query(
-      `
-      INSERT INTO notifications
-      (
-        student_id,
-        title,
-        message,
-        is_read,
-        created_at
-      )
-      VALUES
-      ($1, $2, $3, false, CURRENT_TIMESTAMP),
-      ($1, $4, $5, false, CURRENT_TIMESTAMP),
-      ($1,$6,$7,false,CURRENT_TIMESTAMP)
-      `,
-      [
-        studentId,
-"Registration Approved",
-"Congratulations! Your convocation registration has been approved.",
-
-"Certificate Ready",
-"Your certificate is ready for download from the Certificate page.",
-
-"Convocation Event",
-"Please check Event Details for reporting time and venue."
-      ]
-    );
+    // Update registration and insert notifications in parallel
+    const [updateResult] = await Promise.all([
+      pool.query(
+        `
+        UPDATE registrations
+        SET status='Approved', updated_at=CURRENT_TIMESTAMP
+        WHERE student_id=$1
+        RETURNING *;
+        `,
+        [studentId]
+      ),
+      pool.query(
+        `
+        INSERT INTO notifications
+        (student_id, title, message, is_read, created_at)
+        VALUES
+        ($1, $2, $3, false, CURRENT_TIMESTAMP),
+        ($1, $4, $5, false, CURRENT_TIMESTAMP),
+        ($1, $6, $7, false, CURRENT_TIMESTAMP)
+        `,
+        [
+          studentId,
+          "Registration Approved",
+          "Congratulations! Your convocation registration has been approved.",
+          "Certificate Ready",
+          "Your certificate is ready for download from the Certificate page.",
+          "Convocation Event",
+          "Please check Event Details for reporting time and venue."
+        ]
+      ),
+      // Send email asynchronously (fire and forget)
+      (async () => {
+        try {
+          console.log("📧 Attempting to send approval email to:", email);
+          await sendEmail(
+            email,
+            "🎓 Convocation Registration Approved",
+            `
+            <div style="font-family: Arial; padding: 20px;">
+              <h2 style="color: green;">Registration Approved</h2>
+              <p>Dear <strong>${full_name}</strong>,</p>
+              <p>Congratulations! Your Convocation Registration has been approved successfully.</p>
+              <p>You can now login to the Convocation Portal to view:
+                <ul>
+                  <li>Registration Status</li>
+                  <li>Seat Allocation</li>
+                  <li>QR Entry Pass</li>
+                  <li>Notifications</li>
+                </ul>
+              </p>
+              <hr>
+              <h3 style="color:#2563eb;">Login Credentials</h3>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Password:</strong> ${roll_no}</p>
+              <p style="color:red;">Please change your password after your first login.</p>
+              <br>
+              <a href="http://localhost:5173/login" style="background:#2563eb; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; font-weight:bold;">Login Now</a>
+              <br><br>
+              <p>Regards,<br>Convocation Management Team</p>
+            </div>
+            `
+          );
+          console.log("✅ Approval email sent successfully");
+        } catch (err) {
+          console.error("❌ Failed to send approval email:", err);
+        }
+      })()
+    ]);
 
     res.json({
       success: true,
       message: "Approved Successfully",
-      data: result.rows[0],
+      data: updateResult.rows[0],
     });
 
   } catch (error) {
@@ -620,106 +459,80 @@ exports.rejectRegistration = async (req, res) => {
   try {
 
     const studentId = req.params.id;
-   const studentResult = await pool.query(
-  `
-  SELECT
-  full_name,
-  email
-  FROM students
-  WHERE id = $1
-  `,
-  [studentId]
-);
-
-const student = studentResult.rows[0];
-    const result = await pool.query(
+    const studentResult = await pool.query(
       `
-      UPDATE registrations
-      SET status='Rejected'
-      WHERE student_id=$1
-      RETURNING *;
+      SELECT
+      full_name,
+      email
+      FROM students
+      WHERE id = $1
       `,
       [studentId]
     );
-    await sendEmail(
 
-  student.email,
-
-  "Convocation Registration Rejected",
-
-  `
-  <div style="font-family:Arial;padding:20px">
-
-    <h2 style="color:red;">
-      Convocation Registration Rejected
-    </h2>
-
-    <p>
-      Dear ${student.full_name},
-    </p>
-
-    <p>
-      We regret to inform you that your
-      Convocation Registration has been rejected.
-    </p>
-
-    <p>
-      This may be due to:
-    </p>
-
-    <ul>
-      <li>Incomplete documents</li>
-      <li>Invalid uploaded documents</li>
-      <li>Eligibility issues</li>
-    </ul>
-
-    <p>
-      Please contact the Convocation Office
-      for further clarification.
-    </p>
-
-    <br>
-
-    <p>
-      Regards,<br/>
-      JNTU-GV Convocation Team
-    </p>
-
-  </div>
-  `
-);
-await pool.query(
-`
-INSERT INTO notifications
-(
-student_id,
-title,
-message,
-is_read,
-created_at
-)
-
-VALUES
-(
-$1,
-$2,
-$3,
-false,
-CURRENT_TIMESTAMP
-)
-`,
-[
-studentId,
-"Registration Rejected",
-"Your registration has been rejected. Please contact the administration office."
-]
-);
-    if (result.rows.length === 0) {
+    if (studentResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Registration Not Found",
+        message: "Student Not Found",
       });
     }
+
+    const student = studentResult.rows[0];
+
+    // Run update, notification insert, and email in parallel
+    const [result] = await Promise.all([
+      pool.query(
+        `
+        UPDATE registrations
+        SET status='Rejected', updated_at=CURRENT_TIMESTAMP
+        WHERE student_id=$1
+        RETURNING *;
+        `,
+        [studentId]
+      ),
+      pool.query(
+        `
+        INSERT INTO notifications
+        (student_id, title, message, is_read, created_at)
+        VALUES
+        ($1, $2, $3, false, CURRENT_TIMESTAMP)
+        `,
+        [
+          studentId,
+          "Registration Rejected",
+          "Your registration has been rejected. Please contact the administration office."
+        ]
+      ),
+      // Send email asynchronously (fire and forget)
+      (async () => {
+        try {
+          console.log("📧 Attempting to send rejection email to:", student.email);
+          await sendEmail(
+            student.email,
+            "Convocation Registration Rejected",
+            `
+            <div style="font-family:Arial;padding:20px">
+              <h2 style="color:red;">Convocation Registration Rejected</h2>
+              <p>Dear ${student.full_name},</p>
+              <p>We regret to inform you that your Convocation Registration has been rejected.</p>
+              <p>This may be due to:</p>
+              <ul>
+                <li>Incomplete documents</li>
+                <li>Invalid uploaded documents</li>
+                <li>Eligibility issues</li>
+              </ul>
+              <p>Please contact the Convocation Office for further clarification.</p>
+              <br>
+              <p>Regards,<br/>JNTU-GV Convocation Team</p>
+            </div>
+            `
+          );
+          console.log("✅ Rejection email sent successfully");
+        } catch (err) {
+          console.error("❌ Failed to send rejection email:", err);
+        }
+      })()
+    ]);
 
     res.json({
       success: true,
@@ -881,6 +694,7 @@ exports.getAllDocuments = async (req, res) => {
         s.hall_ticket_no,
         s.program,
         s.department,
+        s.batch,
 
         r.id AS registration_id,
         r.status,
@@ -1108,10 +922,11 @@ exports.allocateSeat = async (req, res) => {
       `
       SELECT
       students.program,
+      students.full_name,
+      students.email,
       registrations.status
 
       FROM students
-
       JOIN registrations
       ON students.id = registrations.student_id
 
@@ -1127,103 +942,69 @@ exports.allocateSeat = async (req, res) => {
       });
     }
 
-    const student =
-      studentResult.rows[0];
+    const student = studentResult.rows[0];
 
-    if (
-      student.status !== "Approved"
-    ) {
+    if (student.status !== "Approved") {
       return res.status(400).json({
         success: false,
-        message:
-          "Student not approved yet"
+        message: "Student not approved yet"
       });
     }
 
-    const prefix =
-      student.program === "UG"
-        ? "UG"
-        : "PG";
+    const prefix = student.program === "UG" ? "UG" : "PG";
 
-    const seatCount =
-      await pool.query(
-        `
-        SELECT COUNT(*)
-        FROM registrations
-        WHERE seat_number IS NOT NULL
-        `
-      );
+    const seatCount = await pool.query(
+      `
+      SELECT COUNT(*)
+      FROM registrations
+      WHERE seat_number IS NOT NULL
+      `
+    );
 
-    const nextSeat =
-      parseInt(
-        seatCount.rows[0].count
-      ) + 1;
+    const nextSeat = parseInt(seatCount.rows[0].count) + 1;
+    const seatNumber = `${prefix}-${100 + nextSeat}`;
+    const rowNumber = Math.ceil(nextSeat / 10);
 
-    const seatNumber =
-      `${prefix}-${100 + nextSeat}`;
-
-    const result =
-      await pool.query(
+    const [result] = await Promise.all([
+      pool.query(
         `
         UPDATE registrations
-
         SET
         seat_number=$1,
         hall_block=$2,
         row_number=$3
-
         WHERE student_id=$4
-
         RETURNING *
         `,
-        [
-          seatNumber,
-          "Main Hall",
-          Math.ceil(nextSeat / 10),
-          studentId
-        ]
-      );
-const studentInfo = await pool.query(
-  `
-  SELECT
-  full_name,
-  email
-  FROM students
-  WHERE id = $1
-  `,
-  [studentId]
-);
+        [seatNumber, "Main Hall", rowNumber, studentId]
+      ),
+      // Send email asynchronously (fire and forget)
+      (async () => {
+        try {
+          console.log("📧 Attempting to send seat allocation email to:", student.email);
+          await sendEmail(
+            student.email,
+            "Convocation Seat Allocation",
+            `
+            <h2>Hello ${student.full_name}</h2>
+            <p>Your seat has been allocated successfully.</p>
+            <p><strong>Seat Number:</strong> ${seatNumber}</p>
+            <p><strong>Hall Block:</strong> Main Hall</p>
+            <p><strong>Row Number:</strong> ${rowNumber}</p>
+            <p>Please login to the Convocation Portal to view your QR Entry Pass.</p>
+            <p>Regards,<br/>JNTU-GV Convocation Team</p>
+            `
+          );
+          console.log("✅ Seat allocation email sent successfully");
+        } catch (err) {
+          console.error("❌ Failed to send seat allocation email:", err);
+        }
+      })()
+    ]);
 
-const studentData = studentInfo.rows[0];
-
-await sendEmail(
-  studentData.email,
-
-  "Convocation Seat Allocation",
-
-  `
-  <h2>Hello ${studentData.full_name}</h2>
-
-  <p>Your seat has been allocated successfully.</p>
-
-  <p><strong>Seat Number:</strong> ${seatNumber}</p>
-
-  <p><strong>Hall Block:</strong> Main Hall</p>
-
-  <p><strong>Row Number:</strong> ${Math.ceil(nextSeat / 10)}</p>
-
-  <p>Please login to the Convocation Portal to view your QR Entry Pass.</p>
-
-  <p>
-  Regards,<br/>
-  JNTU-GV Convocation Team
-  </p>
-  `
-);
     res.json({
       success: true,
-      message:
-        "Seat Allocated Successfully",
+      message: "Seat Allocated Successfully",
       data: result.rows[0]
     });
 
@@ -1247,6 +1028,7 @@ exports.getSeatDetails = async (req, res) => {
         students.full_name,
 
         students.program,
+        students.batch,
 
         registrations.seat_number,
 

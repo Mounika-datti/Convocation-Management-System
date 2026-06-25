@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import StatsCard from "../components/StatsCard";
+import NotificationPopup from "../components/NotificationPopup";
 import api from "../services/api";
 import { getRegistrationStatus } from "../services/registrationService";
 import { getDocuments } from "../services/documentService";
@@ -14,6 +15,8 @@ function StudentDashboard() {
   const [documentStatus, setDocumentStatus] = useState("Pending");
   const [certificateStatus, setCertificateStatus] = useState("Not Available");
   const [paymentStatus, setPaymentStatus] = useState("Pending");
+  const [notification, setNotification] = useState(null);
+  const [previousStatus, setPreviousStatus] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -36,7 +39,25 @@ function StudentDashboard() {
 
         if (registrationRes?.data?.success) {
           const registration = registrationRes.data.data;
-          setRegistrationStatus(registration.status || "Pending");
+          const currentStatus = registration.status || "Pending";
+          
+          // Show notification if status changed
+          if (previousStatus && previousStatus !== currentStatus) {
+            if (currentStatus === "Approved") {
+              setNotification({
+                type: "success",
+                message: "🎉 Your registration has been APPROVED! Check your email for details.",
+              });
+            } else if (currentStatus === "Rejected") {
+              setNotification({
+                type: "error",
+                message: "❌ Your registration has been REJECTED. Contact admin for more info.",
+              });
+            }
+          }
+          
+          setRegistrationStatus(currentStatus);
+          setPreviousStatus(currentStatus);
           setPaymentStatus(registration.payment_status || "Pending");
         } else {
           setRegistrationStatus("Not Registered");
@@ -73,6 +94,11 @@ function StudentDashboard() {
 
     fetchProfile();
     fetchDashboardStatus();
+
+    // Refresh dashboard every 10 seconds to check for status updates
+    const interval = setInterval(fetchDashboardStatus, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -81,6 +107,16 @@ function StudentDashboard() {
       <Sidebar />
 
       <div className="flex-1 p-8">
+
+        {/* Notification Popup */}
+        {notification && (
+          <NotificationPopup
+            message={notification.message}
+            type={notification.type}
+            duration={6000}
+            onClose={() => setNotification(null)}
+          />
+        )}
 
        <h1 className="text-4xl font-bold text-blue-900">
   Welcome, {user.full_name || "Student"}
@@ -251,6 +287,21 @@ function StudentDashboard() {
 
             <p className="mt-3 text-gray-500">
               View convocation event details.
+            </p>
+          </Link>
+
+          {/* QR Code Pass */}
+
+          <Link
+            to="/student-qr"
+            className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200"
+          >
+            <h3 className="font-bold text-xl">
+              🎟️ QR Entry Pass
+            </h3>
+
+            <p className="mt-3 text-gray-500">
+              View and scan your QR code.
             </p>
           </Link>
 
