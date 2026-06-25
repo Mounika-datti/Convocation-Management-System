@@ -1,5 +1,5 @@
 const pool = require("../config/db");
-const { generateQRCode } = require("../utils/generateQRCode");
+
 
 // ================= GET PROFILE =================
 
@@ -113,21 +113,32 @@ WHERE id = $10
 
 // ================= GET QR =================
 
+// ================= GET QR =================
+
 const getStudentQR = async (req, res) => {
   try {
 
     const result = await pool.query(
       `
       SELECT
-      s.id,
-      s.full_name,
-      s.hall_ticket_no,
-      s.program,
-      r.seat_number,
-      r.hall_block,
-      r.row_number
+        s.id,
+        s.full_name,
+        s.hall_ticket_no,
+        s.roll_no,
+        s.program,
+        s.department,
+        s.batch,
+
+        r.status,
+        r.payment_status,
+        r.seat_number,
+        r.hall_block,
+        r.row_number,
+        r.convocation_id,
+        r.qr_code
 
       FROM students s
+
       JOIN registrations r
       ON s.id = r.student_id
 
@@ -138,44 +149,78 @@ const getStudentQR = async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        success:false,
-        message:"QR Pass Not Found"
+        success: false,
+        message: "QR Pass Not Found"
       });
     }
 
     const student = result.rows[0];
 
-    // Create QR data with student information
-    const qrData = {
-      convocation_id: `CONV-${student.id}`,
-      student_id: student.id,
-      seat_number: student.seat_number,
-      hall_block: student.hall_block,
-      row_number: student.row_number
-    };
+    res.json({
+      success: true,
+      data: student
+    });
 
-    // Generate QR code
-    const qrCode = await generateQRCode(qrData);
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+};
+const verifyQR = async (req, res) => {
+  try {
+
+    const { convocationId } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        s.full_name,
+        s.hall_ticket_no,
+        s.roll_no,
+        s.department,
+        s.program,
+        s.batch,
+
+        r.seat_number,
+        r.hall_block,
+        r.row_number,
+        r.convocation_id,
+        r.status,
+        r.payment_status
+
+      FROM registrations r
+
+      JOIN students s
+      ON r.student_id = s.id
+
+      WHERE r.convocation_id = $1
+      `,
+      [convocationId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid QR"
+      });
+    }
 
     res.json({
       success: true,
-      data: {
-        full_name: student.full_name,
-        hall_ticket_no: student.hall_ticket_no,
-        program: student.program,
-        seat_number: student.seat_number,
-        hall_block: student.hall_block,
-        row_number: student.row_number,
-        qr_code: qrCode,
-        qr_data: qrData
-      }
+      data: result.rows[0]
     });
 
-  } catch(error){
+  } catch (error) {
 
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message
     });
 
   }
@@ -184,4 +229,5 @@ module.exports = {
   getProfile,
   updateProfile,
   getStudentQR,
+  verifyQR,
 };

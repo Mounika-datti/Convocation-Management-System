@@ -26,12 +26,9 @@ const {
   totalRevenue,
   allocateSeat,
 getSeatDetails,
-generateQR,
 sendEventReminder,
 } = require("../controllers/adminController");
-console.log("generateQR =", generateQR);
-console.log("allocateSeat =", allocateSeat);
-console.log("getSeatDetails =", getSeatDetails);
+
 const {
   deleteStudent,
 } = require("../controllers/adminController");
@@ -56,11 +53,7 @@ router.get(
   adminAuth,
   getRecentActivities
 );
-router.post(
- "/generate-qr/:id",
-  adminAuth,
-  generateQR
-);
+
 router.get(
   "/search",
   adminAuth,

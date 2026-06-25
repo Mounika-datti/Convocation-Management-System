@@ -167,17 +167,14 @@ function StudentQRCode() {
 
             </div>
 
-            {qrData?.qr_data ? (
+            {qrData?.qr_code ? (
 
               <div className="bg-white p-6 rounded-3xl border-4 border-blue-100 shadow-lg w-80 h-80 flex items-center justify-center">
-                <QRCode
-                  value={JSON.stringify(qrData.qr_data)}
-                  size={300}
-                  level="H"
-                  includeMargin={true}
-                  fgColor="#000000"
-                  bgColor="#FFFFFF"
-                />
+               <img
+    src={qrData.qr_code}
+    alt="QR Code"
+    className="w-80 h-80 border rounded-xl shadow"
+/>
               </div>
 
             ) : (
@@ -193,45 +190,77 @@ function StudentQRCode() {
               convocation entrance for
               verification and attendance.
             </p>
+            <div className="mt-8 bg-blue-50 rounded-2xl p-6 w-full">
 
-            {/* QR Data Information */}
-            {qrData?.qr_data && (
-              <div className="mt-8 w-full bg-blue-50 p-6 rounded-2xl border border-blue-200">
-                <h3 className="font-bold text-gray-800 mb-3">QR Code Data:</h3>
-                <div className="grid md:grid-cols-2 gap-3 text-sm">
-            {/* Action Buttons */}
-            <div className="mt-8 flex gap-3 flex-wrap">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-              >
-                Print Pass
-              </button>
-              <Link
-                to="/qr-scanner"
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-              >
-                <FaCamera size={18} />
-                Scan Another QR
-              </Link>
-              <Link
-                to="/student-dashboard"
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-              >
-                Back to Dashboard
-              </Link>
-            </div>
+  <h2 className="text-xl font-bold mb-5">
+    Convocation Details
+  </h2>
 
-                  <p><strong>Convocation ID:</strong> {qrData.qr_data.convocation_id}</p>
-                  <p><strong>Student ID:</strong> {qrData.qr_data.student_id}</p>
-                  <p><strong>Seat Number:</strong> {qrData.qr_data.seat_number}</p>
-                  <p><strong>Hall Block:</strong> {qrData.qr_data.hall_block}</p>
-                  <p><strong>Row Number:</strong> {qrData.qr_data.row_number}</p>
-                </div>
-              </div>
-            )}
+  <div className="grid md:grid-cols-2 gap-4">
 
-          </div>
+    <p>
+      <strong>Convocation ID:</strong>{" "}
+      {qrData?.convocation_id}
+    </p>
+
+    <p>
+      <strong>Seat Number:</strong>{" "}
+      {qrData?.seat_number}
+    </p>
+
+    <p>
+      <strong>Hall Block:</strong>{" "}
+      {qrData?.hall_block}
+    </p>
+
+    <p>
+      <strong>Row Number:</strong>{" "}
+      {qrData?.row_number}
+    </p>
+
+    <p>
+      <strong>Registration Status:</strong>{" "}
+      <span className="text-green-600 font-bold">
+        {qrData?.status}
+      </span>
+    </p>
+
+    <p>
+      <strong>Payment Status:</strong>{" "}
+      <span className="text-green-600 font-bold">
+        {qrData?.payment_status}
+      </span>
+    </p>
+
+  </div>
+
+</div>
+<div className="mt-8 flex gap-4 flex-wrap">
+
+  <button
+    onClick={() => window.print()}
+    className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg"
+  >
+    Print Pass
+  </button>
+
+  <a
+    href={qrData?.qr_code}
+    download={`QR-${qrData?.convocation_id}.png`}
+    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg"
+  >
+    Download QR
+  </a>
+
+  <Link
+    to="/student-dashboard"
+    className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg"
+  >
+    Back to Dashboard
+  </Link>
+
+</div>
+</div>
 
         </div>
 

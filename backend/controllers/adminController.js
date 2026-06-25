@@ -205,125 +205,6 @@ exports.getAllRegistrations = async (req, res) => {
   }
 
 };
-
-exports.generateQR = async (req, res) => {
-  try {
-
-    console.log("QR API CALLED");
-
-    const studentId = req.params.id;
-
-    console.log("Student ID:", studentId);
-
-    const result = await pool.query(
-      `
-      SELECT
-      s.id,
-      s.full_name,
-      s.email,
-      s.program,
-      r.seat_number,
-      r.hall_block,
-      r.row_number
-
-      FROM students s
-      JOIN registrations r
-      ON s.id = r.student_id
-
-      WHERE s.id = $1
-      `,
-      [studentId]
-    );
-
-    console.log("Student Query:", result.rows);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success:false,
-        message:"Student not found"
-      });
-    }
-
-    const student = result.rows[0];
-
-    const qrData = {
-      convocation_id: `CONV-${student.id}`,
-      student_id: student.id,
-      seat_number: student.seat_number,
-      hall_block: student.hall_block,
-      row_number: student.row_number
-    };
-
-    console.log("QR DATA:", qrData);
-
-    const verificationUrl =
-`http://localhost:5173/verify/CONV-${student.id}`;
-
-const qrCode = await QRCode.toDataURL(
-  verificationUrl,
-  {
-    width: 500,
-    errorCorrectionLevel: "H"
-  }
-);
-
-    console.log("QR GENERATED");
-
-    // Run database update and email in parallel
-    await Promise.all([
-      pool.query(
-        `
-        UPDATE registrations
-        SET qr_code=$1
-        WHERE student_id=$2
-        RETURNING *
-        `,
-        [qrCode, studentId]
-      ),
-      // Send email asynchronously (fire and forget)
-      (async () => {
-        try {
-          console.log("📧 Attempting to send QR email to:", student.email);
-          await sendEmail(
-            student.email,
-            "QR Entry Pass Generated",
-            `
-            <div style="font-family:Arial;padding:20px">
-              <h2 style="color:green;">QR Entry Pass Generated</h2>
-              <p>Dear ${student.full_name},</p>
-              <p>Your Convocation QR Entry Pass has been generated successfully.</p>
-              <p>Please login to the portal and view your QR Entry Pass.</p>
-              <p>This QR Code is required for entry into the Convocation Hall.</p>
-              <br>
-              <p>Regards,<br/>JNTU-GV Convocation Team</p>
-            </div>
-            `
-          );
-          console.log("✅ QR email sent successfully");
-        } catch (err) {
-          console.error("❌ Failed to send QR email:", err);
-        }
-      })()
-    ]);
-
-    console.log("UPDATE RESULT: Success");
-
-    res.json({
-      success:true,
-      qr_code:qrCode
-    });
-
-  } catch(error){
-
-    console.log("QR ERROR:", error);
-
-    res.status(500).json({
-      success:false,
-      message:error.message
-    });
-
-  }
-};
 // =======================================
 // Approve Registration
 // =======================================
@@ -398,99 +279,121 @@ const year = new Date().getFullYear();
 
 const convocationId = `CONV-${year}-${String(nextSeat).padStart(4, "0")}`;
     // Update registration and insert notifications in parallel
-    const [updateResult] = await Promise.all([
-     pool.query(
+ const [updateResult] = await Promise.all([
+
+  // Update Registration
+  pool.query(
+    `
+    UPDATE registrations
+    SET
+      status='Approved',
+      seat_number=$1,
+      hall_block=$2,
+      row_number=$3,
+      convocation_id=$4
+    WHERE student_id=$5
+    RETURNING *;
+    `,
+    [
+      seatNumber,
+      hallBlock,
+      rowNumber,
+      convocationId,
+      studentId
+    ]
+  ),
+
+  // Insert Notifications
+  pool.query(
+    `
+    INSERT INTO notifications
+    (student_id,title,message,is_read,created_at)
+    VALUES
+    ($1,$2,$3,false,CURRENT_TIMESTAMP),
+    ($1,$4,$5,false,CURRENT_TIMESTAMP),
+    ($1,$6,$7,false,CURRENT_TIMESTAMP)
+    `,
+    [
+      studentId,
+      "Registration Approved",
+      "Congratulations! Your convocation registration has been approved.",
+      "Certificate Ready",
+      "Your certificate is ready for download from the Certificate page.",
+      "Convocation Event",
+      "Please check Event Details for reporting time and venue."
+    ]
+  ),
+
+  // Send Email
+  (async () => {
+    try {
+
+      await sendEmail(
+        email,
+        "🎓 Convocation Registration Approved",
+        `
+        <div style="font-family:Arial;padding:20px;">
+          <h2 style="color:green;">Registration Approved</h2>
+
+          <p>Dear <b>${full_name}</b>,</p>
+
+          <p>Your Convocation Registration has been approved successfully.</p>
+
+          <p>
+          <strong>Seat Number:</strong> ${seatNumber}<br>
+          <strong>Hall Block:</strong> ${hallBlock}<br>
+          <strong>Row Number:</strong> ${rowNumber}<br>
+          <strong>Convocation ID:</strong> ${convocationId}
+          </p>
+
+          <br>
+
+          <a href="http://localhost:5173/login">
+          Login Now
+          </a>
+
+        </div>
+        `
+      );
+
+    } catch(err){
+      console.log(err);
+    }
+  })()
+
+]);
+
+// ===========================
+// Generate QR
+// ===========================
+
+const verificationUrl =
+`http://localhost:5173/verify/${convocationId}`;
+
+const qrCode = await QRCode.toDataURL(verificationUrl);
+
+// Save QR
+await pool.query(
 `
 UPDATE registrations
-
-SET
-
-status='Approved',
-
-seat_number=$1,
-
-hall_block=$2,
-
-row_number=$3,
-
-convocation_id=$4
-
-WHERE student_id=$5
-
-RETURNING *;
+SET qr_code=$1
+WHERE student_id=$2
 `,
 [
-seatNumber,
-hallBlock,
-rowNumber,
-convocationId,
-studentId
-]
-),
-      pool.query(
-        `
-        INSERT INTO notifications
-        (student_id, title, message, is_read, created_at)
-        VALUES
-        ($1, $2, $3, false, CURRENT_TIMESTAMP),
-        ($1, $4, $5, false, CURRENT_TIMESTAMP),
-        ($1, $6, $7, false, CURRENT_TIMESTAMP)
-        `,
-        [
-          studentId,
-          "Registration Approved",
-          "Congratulations! Your convocation registration has been approved.",
-          "Certificate Ready",
-          "Your certificate is ready for download from the Certificate page.",
-          "Convocation Event",
-          "Please check Event Details for reporting time and venue."
-        ]
-      ),
-      // Send email asynchronously (fire and forget)
-      (async () => {
-        try {
-          console.log("📧 Attempting to send approval email to:", email);
-          await sendEmail(
-            email,
-            "🎓 Convocation Registration Approved",
-            `
-            <div style="font-family: Arial; padding: 20px;">
-              <h2 style="color: green;">Registration Approved</h2>
-              <p>Dear <strong>${full_name}</strong>,</p>
-              <p>Congratulations! Your Convocation Registration has been approved successfully.</p>
-              <p>You can now login to the Convocation Portal to view:
-                <ul>
-                  <li>Registration Status</li>
-                  <li>Seat Allocation</li>
-                  <li>QR Entry Pass</li>
-                  <li>Notifications</li>
-                </ul>
-              </p>
-              <hr>
-              <h3 style="color:#2563eb;">Login Credentials</h3>
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Password:</strong> ${roll_no}</p>
-              <p style="color:red;">Please change your password after your first login.</p>
-              <br>
-              <a href="http://localhost:5173/login" style="background:#2563eb; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; font-weight:bold;">Login Now</a>
-              <br><br>
-              <p>Regards,<br>Convocation Management Team</p>
-            </div>
-            `
-          );
-          console.log("✅ Approval email sent successfully");
-        } catch (err) {
-          console.error("❌ Failed to send approval email:", err);
-        }
-      })()
-    ]);
+  qrCode,
+  studentId
+]);
 
-    res.json({
-      success: true,
-      message: "Approved Successfully",
-      data: updateResult.rows[0],
-    });
+// ===========================
 
+res.json({
+  success:true,
+  message:"Approved Successfully",
+  data:{
+    ...updateResult.rows[0],
+    qr_code: qrCode
+  }
+});
   } catch (error) {
 
     console.log(error);
