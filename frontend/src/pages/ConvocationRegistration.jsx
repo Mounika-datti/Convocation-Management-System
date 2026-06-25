@@ -402,19 +402,6 @@ const [bankName, setBankName] = useState("");
       </select>
     </div>
 
-    <div className="md:col-span-2">
-      <label className="font-semibold">
-        Bank Name
-      </label>
-
-      <input
-        type="text"
-        value={bankName}
-        onChange={(e)=>setBankName(e.target.value)}
-        className="w-full border rounded-xl p-3 mt-2"
-      />
-    </div>
-
   </div>
 
 </div>

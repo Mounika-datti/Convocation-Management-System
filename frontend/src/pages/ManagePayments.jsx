@@ -38,22 +38,6 @@ function ManagePayments() {
 
   };
 
-  const rejectPayment = async (id) => {
-
-    try {
-
-      await api.put(`/payments/reject/${id}`);
-
-      alert("Payment Rejected");
-
-      fetchPayments();
-
-    } catch (err) {
-      console.log(err);
-    }
-
-  };
-
   return (
 
     <div className="flex min-h-screen bg-gray-100">
@@ -83,8 +67,6 @@ function ManagePayments() {
               <th>Amount</th>
 
               <th>Method</th>
-
-              <th>Bank</th>
 
               <th>Status</th>
 
@@ -124,59 +106,35 @@ function ManagePayments() {
                   {payment.payment_method}
                 </td>
 
-                <td>
-                  {payment.bank_name}
-                </td>
+                <span
+  className={
+    payment.payment_status === "Verified"
+      ? "text-green-600 font-bold"
+      : "text-orange-600 font-bold"
+  }
+>
+  {payment.payment_status}
+</span>
+<td>
 
-                <td>
+  {payment.payment_status === "Verified" ? (
 
-                  <span
-                    className={
-                      payment.payment_status==="Verified"
-                      ?"text-green-600 font-bold"
-                      :payment.payment_status==="Rejected"
-                      ?"text-red-600 font-bold"
-                      :"text-orange-600 font-bold"
-                    }
-                  >
+    <span className="text-green-600 font-bold">
+      ✅ Verified
+    </span>
 
-                    {payment.payment_status}
+  ) : (
 
-                  </span>
+    <button
+      onClick={() => verifyPayment(payment.id)}
+      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+    >
+      Verify
+    </button>
 
-                </td>
+  )}
 
-                <td>
-
-                  <button
-
-                    onClick={() =>
-                      verifyPayment(payment.id)
-                    }
-
-                    className="bg-green-600 text-white px-3 py-1 rounded mr-2"
-
-                  >
-
-                    Verify
-
-                  </button>
-
-                  <button
-
-                    onClick={() =>
-                      rejectPayment(payment.id)
-                    }
-
-                    className="bg-red-600 text-white px-3 py-1 rounded"
-
-                  >
-
-                    Reject
-
-                  </button>
-
-                </td>
+</td>
 
               </tr>
 

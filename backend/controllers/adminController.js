@@ -340,7 +340,8 @@ exports.approveRegistration = async (req, res) => {
         r.status,
         s.full_name,
         s.email,
-        s.roll_no
+        s.roll_no,
+        s.program
       FROM registrations r
       JOIN students s ON r.student_id = s.id
       WHERE r.student_id = $1
@@ -355,7 +356,7 @@ exports.approveRegistration = async (req, res) => {
       });
     }
 
-    const { status, full_name, email, roll_no } = statusResult.rows[0];
+    const { status, full_name, email, roll_no,program } = statusResult.rows[0];
 
     if (status === "Approved") {
       return res.status(200).json({
@@ -363,18 +364,71 @@ exports.approveRegistration = async (req, res) => {
         message: "Student is already approved.",
       });
     }
+// // =============================
+// Generate Seat Number
+// =============================
 
+// Count already allocated seats
+const seatResult = await pool.query(
+  `
+  SELECT COUNT(*) AS total
+  FROM registrations
+  WHERE seat_number IS NOT NULL
+  `
+);
+
+const nextSeat = parseInt(seatResult.rows[0].total) + 1;
+
+// Check student program
+const prefix = program === "UG" ? "UG" : "PG";
+
+// Generate seat number
+const seatNumber = `${prefix}-${100 + nextSeat}`;
+
+// Hall Block
+const hallBlock = "Main Hall";
+
+// Row Number (10 seats per row)
+const rowNumber = Math.ceil(nextSeat / 10);
+// ================================
+// Generate Convocation ID
+// ================================
+
+const year = new Date().getFullYear();
+
+const convocationId = `CONV-${year}-${String(nextSeat).padStart(4, "0")}`;
     // Update registration and insert notifications in parallel
     const [updateResult] = await Promise.all([
-      pool.query(
-        `
-        UPDATE registrations
-        SET status='Approved', updated_at=CURRENT_TIMESTAMP
-        WHERE student_id=$1
-        RETURNING *;
-        `,
-        [studentId]
-      ),
+     pool.query(
+`
+UPDATE registrations
+
+SET
+
+status='Approved',
+
+seat_number=$1,
+
+hall_block=$2,
+
+row_number=$3,
+
+convocation_id=$4,
+
+updated_at=CURRENT_TIMESTAMP
+
+WHERE student_id=$5
+
+RETURNING *;
+`,
+[
+seatNumber,
+hallBlock,
+rowNumber,
+convocationId,
+studentId
+]
+),
       pool.query(
         `
         INSERT INTO notifications
