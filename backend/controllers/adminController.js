@@ -415,8 +415,6 @@ row_number=$3,
 
 convocation_id=$4,
 
-updated_at=CURRENT_TIMESTAMP
-
 WHERE student_id=$5
 
 RETURNING *;
