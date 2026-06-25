@@ -636,8 +636,9 @@ exports.getAllPayments = async (req, res) => {
 
   try {
 
-    const result = await pool.query(`
-      SELECT
+    const result = await pool.query(
+
+      `SELECT
 
       payments.id,
 
@@ -645,42 +646,113 @@ exports.getAllPayments = async (req, res) => {
 
       students.hall_ticket_no,
 
-      payments.amount,
+      students.roll_no,
+
+      students.department,
+
+      students.program,
 
       payments.transaction_id,
 
-      payments.payment_status,
+      payments.amount,
 
-      payments.payment_date
+      payments.payment_date,
+
+      payments.payment_method,
+
+      payments.bank_name,
+
+      payments.payment_status
 
       FROM payments
 
       JOIN students
 
-      ON payments.student_id = students.id
+      ON students.id=payments.student_id
 
-      ORDER BY payments.id DESC
-    `);
+      ORDER BY payments.id DESC`
 
-    res.status(200).json({
+    );
+
+    res.json({
       success: true,
-      count: result.rows.length,
       data: result.rows,
     });
 
-  } catch (error) {
-
-    console.log(error);
+  } catch (err) {
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: err.message,
     });
 
   }
 
 };
+exports.verifyPayment = async (req, res) => {
 
+  try {
+
+    const { id } = req.params;
+
+    await pool.query(
+
+      `UPDATE payments
+
+      SET payment_status='Verified'
+
+      WHERE id=$1`,
+
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: "Payment Verified",
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+
+  }
+
+};
+exports.rejectPayment = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    await pool.query(
+
+      `UPDATE payments
+
+      SET payment_status='Rejected'
+
+      WHERE id=$1`,
+
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: "Payment Rejected",
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+
+  }
+
+};
 // =======================================
 // Get All Documents
 // =======================================

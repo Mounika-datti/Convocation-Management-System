@@ -24,6 +24,7 @@ import AdminNotifications from "../pages/AdminNotifications";
 import StudentQRCode from "../pages/StudentQRCode";
 import QRScanner from "../pages/QRScanner";
 import VerifyPage from "../pages/VerifyPage";
+import ManagePayments from "../pages/ManagePayments";
 
 function AppRoutes() {
   return (
@@ -71,7 +72,14 @@ function AppRoutes() {
     </ProtectedRoute>
   }
 />
-
+<Route
+  path="/manage-payments"
+  element={
+    <ProtectedRoute>
+      <ManagePayments />
+    </ProtectedRoute>
+  }
+/>
 <Route
   path="/event-details"
   element={

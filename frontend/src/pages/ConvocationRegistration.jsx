@@ -31,9 +31,14 @@ function ConvocationRegistration() {
   const [degree, setDegree] = useState("");
   const [program, setProgram] = useState("");
   const [department, setDepartment] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+const [amount, setAmount] = useState("500");
+const [paymentDate, setPaymentDate] = useState("");
+const [paymentMethod, setPaymentMethod] = useState("UPI");
+const [bankName, setBankName] = useState("");
 
-  const degreeOptions = ["B.Tech", "M.Tech", "B.Sc", "M.Sc", "MBA"];
-  const programOptions = ["Regular", "Lateral", "Distance"];
+  const degreeOptions = ["B.Tech", "P.H.D"];
+  const programOptions = ["UG","PG"];
   const departmentOptions = ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical"];
 
   const alreadyRegistered = Boolean(status);
@@ -69,13 +74,16 @@ function ConvocationRegistration() {
     try {
       setLoading(true);
 
-      const payload = {
-        session_id: 2,
-        attendance_type:
-          attendanceType,
-     
-      };
+     const payload = {
+  session_id: 2,
+  attendance_type: attendanceType,
 
+  transaction_id: transactionId,
+  amount,
+  payment_date: paymentDate,
+  payment_method: paymentMethod,
+  bank_name: bankName,
+};
       const res =
         await registerConvocation(
           payload
@@ -324,6 +332,92 @@ function ConvocationRegistration() {
               </div>
 
             </div>
+            {/* Payment Details */}
+
+<div className="bg-white rounded-3xl shadow-lg border p-6">
+
+  <h2 className="text-2xl font-bold text-blue-800 mb-6">
+    Payment Details
+  </h2>
+
+  <div className="grid md:grid-cols-2 gap-6">
+
+    <div>
+      <label className="font-semibold">
+        Transaction ID
+      </label>
+
+      <input
+        type="text"
+        value={transactionId}
+        onChange={(e)=>setTransactionId(e.target.value)}
+        className="w-full border rounded-xl p-3 mt-2"
+        required
+      />
+    </div>
+
+    <div>
+      <label className="font-semibold">
+        Amount
+      </label>
+
+      <input
+        type="number"
+        value={amount}
+        onChange={(e)=>setAmount(e.target.value)}
+        className="w-full border rounded-xl p-3 mt-2"
+        required
+      />
+    </div>
+
+    <div>
+      <label className="font-semibold">
+        Payment Date
+      </label>
+
+      <input
+        type="date"
+        value={paymentDate}
+        onChange={(e)=>setPaymentDate(e.target.value)}
+        className="w-full border rounded-xl p-3 mt-2"
+        required
+      />
+    </div>
+
+    <div>
+      <label className="font-semibold">
+        Payment Method
+      </label>
+
+      <select
+        value={paymentMethod}
+        onChange={(e)=>setPaymentMethod(e.target.value)}
+        className="w-full border rounded-xl p-3 mt-2"
+      >
+        <option>UPI</option>
+        <option>Net Banking</option>
+        <option>Debit Card</option>
+        <option>Credit Card</option>
+        <option>Bank Challan</option>
+      </select>
+    </div>
+
+    <div className="md:col-span-2">
+      <label className="font-semibold">
+        Bank Name
+      </label>
+
+      <input
+        type="text"
+        value={bankName}
+        onChange={(e)=>setBankName(e.target.value)}
+        className="w-full border rounded-xl p-3 mt-2"
+      />
+    </div>
+
+  </div>
+
+</div>
 
             {/* Declaration */}
 

@@ -9,7 +9,7 @@ import {
   FaChartBar,
   FaSignOutAlt,
 } from "react-icons/fa";
-
+import { FaMoneyCheckAlt } from "react-icons/fa";
 function AdminSidebar() {
   const location = useLocation();
 
@@ -24,6 +24,11 @@ function AdminSidebar() {
       path: "/manage-students",
       icon: <FaUserGraduate />,
     },
+    {
+  name: "Manage Payments",
+  path: "/manage-payments",
+  icon: <FaMoneyCheckAlt />,
+},
     {
       name: "Verify Documents",
       path: "/verify-documents",

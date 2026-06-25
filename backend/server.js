@@ -48,6 +48,7 @@ const adminAuthRoutes = require("./routes/adminAuthRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reportRoutes =require("./routes/reportRoutes");
+const paymentRoutes=require("./routes/paymentRoutes");
 // ======================
 // API Routes
 // ======================
@@ -69,6 +70,7 @@ app.use(
   "/api/reports",
   reportRoutes
 );
+app.use("/api/payments",paymentRoutes);
 // ======================
 // Home Route
 // ======================

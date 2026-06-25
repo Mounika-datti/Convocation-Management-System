@@ -4,7 +4,15 @@ const pool = require("../config/db");
 exports.registerConvocation = async (req, res) => {
   try {
     const student_id = req.user.id;
-    const { session_id, attendance_type } = req.body;
+    const {
+  session_id,
+  attendance_type,
+  transaction_id,
+  amount,
+  payment_date,
+  payment_method,
+  bank_name,
+} = req.body;
 
     if (!session_id || !attendance_type) {
       return res.status(400).json({
@@ -65,7 +73,30 @@ exports.registerConvocation = async (req, res) => {
         program
       ]
     );
-
+await pool.query(
+  `
+  INSERT INTO payments
+  (
+    student_id,
+    transaction_id,
+    amount,
+    payment_date,
+    payment_method,
+    bank_name,
+    payment_status
+  )
+  VALUES
+  ($1,$2,$3,$4,$5,$6,'Pending')
+  `,
+  [
+    student_id,
+    transaction_id,
+    amount,
+    payment_date,
+    payment_method,
+    bank_name
+  ]
+);
     res.status(201).json({
       success: true,
       message: "Registration Successful",
@@ -95,14 +126,31 @@ exports.getRegistrationStatus = async (req, res) => {
 
   try {
 
-    const result = await pool.query(
-      `
-      SELECT *
-      FROM registrations
-      WHERE student_id=$1
-      `,
-      [req.user.id]
-    );
+   const result = await pool.query(
+`
+SELECT
+
+r.id,
+r.session_id,
+r.attendance_type,
+r.status,
+r.payment_status,
+
+p.transaction_id,
+p.amount,
+p.payment_date,
+p.payment_method,
+p.bank_name
+
+FROM registrations r
+
+LEFT JOIN payments p
+ON r.student_id = p.student_id
+
+WHERE r.student_id = $1
+`,
+[req.user.id]
+);
 
     if (result.rows.length === 0) {
 
