@@ -54,7 +54,7 @@ function AppRoutes() {
         }
       />
       <Route
-    path="/admin/invitations"
+    path="/invitation-management"
     element={<ProtectedRoute><InvitationManagement /></ProtectedRoute>}
 />
 <Route
