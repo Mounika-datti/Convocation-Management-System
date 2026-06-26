@@ -8,6 +8,7 @@ import {
   FaBell,
   FaChartBar,
   FaSignOutAlt,
+  FaEnvelopeOpenText,
 } from "react-icons/fa";
 import { FaMoneyCheckAlt } from "react-icons/fa";
 function AdminSidebar() {
@@ -39,6 +40,11 @@ function AdminSidebar() {
       path: "/manage-events",
       icon: <FaCalendarAlt />,
     },
+    {
+  name: "Invitation Management",
+  path: "/invitation-management",
+  icon: <FaEnvelopeOpenText />,
+},
     {
       name: "Notifications History",
       path: "/admin-notifications",

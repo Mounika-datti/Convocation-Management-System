@@ -25,6 +25,7 @@ import StudentQRCode from "../pages/StudentQRCode";
 import QRScanner from "../pages/QRScanner";
 import VerifyPage from "../pages/VerifyPage";
 import ManagePayments from "../pages/ManagePayments";
+import InvitationManagement from "../pages/InvitationManagement";
 
 function AppRoutes() {
   return (
@@ -52,9 +53,13 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+    path="/admin/invitations"
+    element={<ProtectedRoute><InvitationManagement /></ProtectedRoute>}
+/>
 <Route
   path="/verify/:convocationId"
-  element={<VerifyPage />}
+  element={<ProtectedRoute><VerifyPage /></ProtectedRoute>}
 />
 <Route
   path="/manage-events"

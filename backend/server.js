@@ -49,6 +49,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reportRoutes =require("./routes/reportRoutes");
 const paymentRoutes=require("./routes/paymentRoutes");
+const invitationRoutes = require("./routes/invitationRoutes");
 // ======================
 // API Routes
 // ======================
@@ -66,11 +67,9 @@ app.use("/api/registration", registrationRoutes);
 app.use( "/api/admin/auth",adminAuthRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use(
-  "/api/reports",
-  reportRoutes
-);
+app.use( "/api/reports",reportRoutes);
 app.use("/api/payments",paymentRoutes);
+app.use("/api/invitations", invitationRoutes);
 // ======================
 // Home Route
 // ======================
