@@ -19,8 +19,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://convocation-management-system.vercel.app",
-      "http://localhost:5173"
+      "https://convocation-management-system.vercel.app/api",
     ],
     credentials: true,
   })
