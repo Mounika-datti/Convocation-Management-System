@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaSearch,
   FaUserGraduate,
@@ -16,6 +17,7 @@ function ManageStudents() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchStudents();
@@ -256,17 +258,31 @@ const handleDelete = async (studentId, studentName) => {
                       </td>
 
                       <td className="p-4">
-                        <button
-                          onClick={() =>
-                            handleDelete(
-                              student.id,
-                              student.full_name
-                            )
-                          }
-                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-                        >
-                          Remove
-                        </button>
+                        
+                       <div className="flex gap-2">
+
+  <button
+    onClick={() =>
+      navigate(`/admin/student-id-card/${student.id}`)
+    }
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+  >
+    View ID
+  </button>
+
+  <button
+    onClick={() =>
+      handleDelete(
+        student.id,
+        student.full_name
+      )
+    }
+    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+  >
+    Remove
+  </button>
+
+</div>
                       </td>
 
                     </tr>

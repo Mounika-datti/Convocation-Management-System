@@ -52,3 +52,8 @@ export const generateQR = (id) =>
 
 export const getQRCode = (id) =>
   api.get(`/admin/qr/${id}`);
+export const getStudentIDCard = (id) => {
+
+  return api.get(`/admin/student-id-card/${id}`);
+
+};

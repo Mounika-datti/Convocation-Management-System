@@ -1,0 +1,154 @@
+.verify-page{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+background:#f2f5f9;
+}
+
+.entry-pass{
+width:850px;
+background:white;
+border:6px solid #0b5ed7;
+border-radius:18px;
+padding:30px;
+position:relative;
+}
+
+.pass-hole{
+width:120px;
+height:22px;
+border:4px solid black;
+border-radius:20px;
+margin:auto;
+margin-bottom:25px;
+}
+
+.pass-header{
+text-align:center;
+}
+
+.pass-logo{
+width:110px;
+display:block;
+margin:auto;
+margin-bottom:10px;
+}
+
+.pass-header h1{
+font-size:34px;
+font-weight:bold;
+color:#003366;
+}
+
+.pass-header h2{
+font-size:24px;
+font-weight:bold;
+color:#008000;
+margin-top:5px;
+}
+
+.pass-header p{
+font-size:18px;
+margin-top:5px;
+}
+
+.pass-header h3{
+font-size:46px;
+font-weight:bold;
+color:#d00000;
+margin-top:15px;
+}
+
+.pass-header h4{
+font-size:26px;
+color:#008000;
+margin-top:10px;
+}
+
+.entry-title{
+width:500px;
+margin:30px auto;
+background:#11823b;
+color:white;
+font-size:42px;
+font-weight:bold;
+text-align:center;
+padding:15px;
+border-radius:6px;
+}
+
+.entry-body{
+display:flex;
+justify-content:space-between;
+margin-top:30px;
+}
+
+.entry-left{
+width:250px;
+border:3px solid #003399;
+}
+
+.program-box{
+border-bottom:3px solid #003399;
+padding:20px;
+text-align:center;
+}
+
+.program-box h2{
+font-size:40px;
+color:#008000;
+}
+
+.program-box p{
+font-size:20px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.entry-number{
+padding:20px;
+text-align:center;
+}
+
+.entry-number h1{
+font-size:36px;
+color:#003399;
+word-break:break-word;
+}
+
+.entry-number p{
+font-size:18px;
+font-weight:bold;
+margin-top:15px;
+}
+
+.entry-right{
+flex:1;
+display:flex;
+align-items:center;
+justify-content:center;
+padding-left:50px;
+}
+
+.name-row{
+display:flex;
+gap:20px;
+font-size:28px;
+font-weight:bold;
+}
+
+.entry-footer{
+margin-top:60px;
+text-align:right;
+}
+
+.signature{
+width:180px;
+}
+
+.entry-footer p{
+font-size:22px;
+font-weight:bold;
+color:#003399;
+}

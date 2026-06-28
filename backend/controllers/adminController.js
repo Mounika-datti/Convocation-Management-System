@@ -1,6 +1,7 @@
 const pool = require("../config/db");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
+const ExcelJS = require("exceljs");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -1218,4 +1219,208 @@ exports.sendEventReminder = async (
 
   }
 
+};
+exports.getStudentIDCard = async (req, res) => {
+
+  try {
+
+    const studentId = req.params.id;
+
+    const result = await pool.query(
+      `
+      SELECT
+        s.full_name,
+        s.hall_ticket_no,
+        s.department,
+        s.degree,
+        d.document_path
+      FROM students s
+      LEFT JOIN documents d
+        ON s.id = d.student_id
+        AND d.document_name='Passport Photo'
+      WHERE s.id = $1
+      `,
+      [studentId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    const student = result.rows[0];
+
+    const photoUrl = student.document_path
+      ? `${req.protocol}://${req.get("host")}/uploads/${student.document_path}`
+      : null;
+
+    res.json({
+      success: true,
+      data: {
+        ...student,
+        photo: photoUrl,
+        convocation: "1 CONVOCATION",
+        university: "Jawaharlal Nehru Technological University Gurajada Vizianagaram",
+        date: "11 July 2026",
+        controller: "Controller of Examination",
+      },
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
+};
+
+
+exports.downloadRegister = async (req, res) => {
+  try {
+
+    const registerId = req.params.id;
+
+    let batch = "";
+
+    switch (registerId) {
+      case "1":
+        batch = "2019-2023";
+        break;
+
+      case "2":
+        batch = "2020-2024";
+        break;
+
+      case "3":
+        batch = "2021-2025";
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Register",
+        });
+    }
+
+    // Fetch UG Students
+    const ugStudents = await pool.query(
+      `
+      SELECT
+      hall_ticket_no,
+      full_name,
+      degree,
+      department,
+      graduation_year,
+      batch
+      FROM students
+      WHERE batch=$1
+      AND program='UG'
+      ORDER BY hall_ticket_no
+      `,
+      [batch]
+    );
+
+    // Fetch PG Students
+    const pgStudents = await pool.query(
+      `
+      SELECT
+      hall_ticket_no,
+      full_name,
+      degree,
+      department,
+      graduation_year,
+      batch
+      FROM students
+      WHERE batch=$1
+      AND program='PG'
+      ORDER BY hall_ticket_no
+      `,
+      [batch]
+    );
+
+    const workbook = new ExcelJS.Workbook();
+
+    // ================= UG Sheet =================
+
+    const ugSheet = workbook.addWorksheet("UG Students");
+
+    ugSheet.columns = [
+      { header: "S.No", key: "sno", width: 8 },
+      { header: "Hall Ticket No", key: "hall_ticket_no", width: 20 },
+      { header: "Student Name", key: "full_name", width: 35 },
+      { header: "Degree", key: "degree", width: 20 },
+      { header: "Department", key: "department", width: 25 },
+      { header: "Graduation Year", key: "graduation_year", width: 18 },
+      { header: "Batch", key: "batch", width: 18 },
+    ];
+
+    ugStudents.rows.forEach((student, index) => {
+      ugSheet.addRow({
+        sno: index + 1,
+        hall_ticket_no: student.hall_ticket_no,
+        full_name: student.full_name,
+        degree: student.degree,
+        department: student.department,
+        graduation_year: student.graduation_year,
+        batch: student.batch,
+      });
+    });
+
+    // ================= PG Sheet =================
+
+    const pgSheet = workbook.addWorksheet("PG Students");
+
+    pgSheet.columns = [
+      { header: "S.No", key: "sno", width: 8 },
+      { header: "Hall Ticket No", key: "hall_ticket_no", width: 20 },
+      { header: "Student Name", key: "full_name", width: 35 },
+      { header: "Degree", key: "degree", width: 20 },
+      { header: "Department", key: "department", width: 25 },
+      { header: "Graduation Year", key: "graduation_year", width: 18 },
+      { header: "Batch", key: "batch", width: 18 },
+    ];
+
+    pgStudents.rows.forEach((student, index) => {
+      pgSheet.addRow({
+        sno: index + 1,
+        hall_ticket_no: student.hall_ticket_no,
+        full_name: student.full_name,
+        degree: student.degree,
+        department: student.department,
+        graduation_year: student.graduation_year,
+        batch: student.batch,
+      });
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Register_${registerId}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+
+    res.end();
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
 };

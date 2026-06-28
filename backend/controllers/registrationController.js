@@ -82,11 +82,10 @@ await pool.query(
     amount,
     payment_date,
     payment_method,
-    bank_name,
     payment_status
   )
   VALUES
-  ($1,$2,$3,$4,$5,$6,'Pending')
+  ($1,$2,$3,$4,$5,'Pending')
   `,
   [
     student_id,
@@ -94,13 +93,20 @@ await pool.query(
     amount,
     payment_date,
     payment_method,
-    bank_name
   ]
+);
+await pool.query(
+  `
+  UPDATE registrations
+  SET id_card_generated = TRUE
+  WHERE student_id = $1
+  `,
+  [student_id]
 );
     res.status(201).json({
       success: true,
-      message: "Registration Successful",
-      data: result.rows[0]
+      message: "Registration Successful.ID Card Generated Successfully.",
+      data: updatedRegistration.rows[0],
     });
 
   } catch (error) {

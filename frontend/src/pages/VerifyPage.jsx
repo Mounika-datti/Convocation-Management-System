@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../services/api";
 
+import logo from "../assets/jntugvlogo.jpg";
+import signature from "../assets/signature.png";
+
+import "./VerifyPage.css";
+
 function VerifyPage() {
 
   const { convocationId } = useParams();
@@ -41,9 +46,17 @@ function VerifyPage() {
   if (loading) {
 
     return (
-      <h2 className="text-center mt-20">
-        Loading...
-      </h2>
+
+      <div className="flex justify-center items-center min-h-screen">
+
+        <h1 className="text-3xl font-bold text-blue-700">
+
+          Loading...
+
+        </h1>
+
+      </div>
+
     );
 
   }
@@ -51,82 +64,145 @@ function VerifyPage() {
   if (!student) {
 
     return (
-      <h2 className="text-center mt-20 text-red-600">
-        Invalid QR Code
-      </h2>
+
+      <div className="flex justify-center items-center min-h-screen">
+
+        <h1 className="text-3xl font-bold text-red-600">
+
+          Invalid QR Code
+
+        </h1>
+
+      </div>
+
     );
 
   }
 
   return (
 
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+    <div className="verify-page">
 
-      <div className="bg-white shadow-xl rounded-xl p-10 w-[700px]">
+      <div id="entry-pass" className="entry-pass">
 
-        <div className="text-center">
+        {/* Hole */}
 
-          <h1 className="text-4xl font-bold text-blue-800">
-            JNTU-GV
+        <div className="pass-hole"></div>
+
+        {/* Header */}
+
+        <div className="pass-header">
+
+          <img
+            src={logo}
+            alt="JNTUGV"
+            className="pass-logo"
+          />
+
+          <h1>
+            Jawaharlal Nehru Technological University
           </h1>
 
-          <h2 className="text-2xl font-semibold mt-3">
-            Convocation Verification
+          <h2>
+            Gurajada Vizianagaram
           </h2>
 
-          <h3 className="text-green-600 text-2xl mt-4 font-bold">
-            ✔ VERIFIED STUDENT
+
+          <h3>
+            1 CONVOCATION
           </h3>
+
+          <h4>
+            11<sup>th</sup> July 2026
+          </h4>
 
         </div>
 
-        <div className="mt-8 space-y-3 text-lg">
+        {/* Entry Pass */}
 
-          <p><b>Name :</b> {student.full_name}</p>
+        <div className="entry-title">
 
-          <p><b>Hall Ticket :</b> {student.hall_ticket_no}</p>
+          ENTRY PASS
 
-          <p><b>Roll No :</b> {student.roll_no}</p>
+        </div>
 
-          <p><b>Department :</b> {student.department}</p>
+        {/* Body */}
 
-          <p><b>Program :</b> {student.program}</p>
+        <div className="entry-body">
 
-          <p><b>Batch :</b> {student.batch}</p>
+          {/* Left */}
 
-          <hr />
+          <div className="entry-left">
 
-          <p><b>Seat Number :</b> {student.seat_number}</p>
+            <div className="program-box">
 
-          <p><b>Hall Block :</b> {student.hall_block}</p>
+              <h2>
 
-          <p><b>Row Number :</b> {student.row_number}</p>
+                {student.degree}
 
-          <p><b>Convocation ID :</b> {student.convocation_id}</p>
+              </h2>
 
-          <hr />
+              <p>
+
+                PROGRAM
+
+              </p>
+
+            </div>
+
+            <div className="entry-number">
+
+              <h1>
+
+                {student.convocation_id}
+
+              </h1>
+
+              <p>
+
+                ENTRY PASS NO.
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* Right */}
+
+          <div className="entry-right">
+
+            <div className="name-row">
+
+              <span>Name</span>
+
+              <span>:</span>
+
+              <strong>
+
+                {student.full_name}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Footer */}
+
+        <div className="entry-footer">
+
+          <img
+            src={signature}
+            alt="Signature"
+            className="signature"
+          />
 
           <p>
 
-            <b>Payment Status :</b>
-
-            <span className="text-green-600 font-bold ml-2">
-
-              {student.payment_status}
-
-            </span>
-
-          </p>
-
-          <p>
-
-            <b>Registration Status :</b>
-
-            <span className="text-green-600 font-bold ml-2">
-
-              {student.status}
-
-            </span>
+            Director of Evaluation
 
           </p>
 

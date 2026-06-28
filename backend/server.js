@@ -50,6 +50,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const reportRoutes =require("./routes/reportRoutes");
 const paymentRoutes=require("./routes/paymentRoutes");
 const invitationRoutes = require("./routes/invitationRoutes");
+const idCardRoutes = require("./routes/idCardRoutes");
 // ======================
 // API Routes
 // ======================
@@ -70,6 +71,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use( "/api/reports",reportRoutes);
 app.use("/api/payments",paymentRoutes);
 app.use("/api/invitations", invitationRoutes);
+app.use("/api/id-card", idCardRoutes);
 // ======================
 // Home Route
 // ======================

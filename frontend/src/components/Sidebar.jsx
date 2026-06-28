@@ -6,6 +6,7 @@ import {
   FaClipboardCheck,
   FaBell,
   FaSignOutAlt,
+  FaIdCard ,
 } from "react-icons/fa";
 import { BsQrCodeScan } from "react-icons/bs";
 
@@ -59,7 +60,13 @@ function Sidebar() {
           <FaClipboardCheck />
           Registration
         </Link>
-
+<Link
+  to="/student-id-card"
+  className="flex items-center gap-3 hover:text-yellow-300"
+>
+  <FaIdCard />
+  ID Card
+</Link>
         <Link
           to="/notifications"
           className="flex items-center gap-3 hover:text-yellow-300"

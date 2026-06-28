@@ -9,6 +9,7 @@ import {
   FaChartBar,
   FaSignOutAlt,
   FaEnvelopeOpenText,
+  FaBook,
 } from "react-icons/fa";
 import { FaMoneyCheckAlt } from "react-icons/fa";
 function AdminSidebar() {
@@ -20,6 +21,11 @@ function AdminSidebar() {
       path: "/admin-dashboard",
       icon: <FaTachometerAlt />,
     },
+    {
+  name: "Convocation Registers",
+  path: "/convocation-registers",
+  icon: <FaBook />,
+},
     {
       name: "Manage Students",
       path: "/manage-students",

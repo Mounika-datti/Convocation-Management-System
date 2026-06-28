@@ -15,6 +15,7 @@ import {
 } from "../services/registrationService";
 import api from "../services/api";
 
+
 function ConvocationRegistration() {
   const [attendanceType, setAttendanceType] =
     useState("In Person");

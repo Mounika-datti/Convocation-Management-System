@@ -26,6 +26,9 @@ import QRScanner from "../pages/QRScanner";
 import VerifyPage from "../pages/VerifyPage";
 import ManagePayments from "../pages/ManagePayments";
 import InvitationManagement from "../pages/InvitationManagement";
+import StudentIDCard from "../pages/StudentIDCard";
+import AdminStudentIDCard from "../pages/AdminStudentIDCard";
+import ConvocationRegisters from "../pages/ConvocationRegisters";
 
 function AppRoutes() {
   return (
@@ -58,6 +61,14 @@ function AppRoutes() {
     element={<ProtectedRoute><InvitationManagement /></ProtectedRoute>}
 />
 <Route
+  path="/student-id-card"
+  element={
+    <ProtectedRoute>
+      <StudentIDCard />
+    </ProtectedRoute>
+  }
+/>
+<Route
   path="/verify/:convocationId"
   element={<ProtectedRoute><VerifyPage /></ProtectedRoute>}
 />
@@ -66,6 +77,14 @@ function AppRoutes() {
   element={
     <ProtectedRoute>
       <ManageEvents />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/convocation-registers"
+  element={
+    <ProtectedRoute>
+      <ConvocationRegisters />
     </ProtectedRoute>
   }
 />
@@ -84,6 +103,14 @@ function AppRoutes() {
       <ManagePayments />
     </ProtectedRoute>
   }
+/>
+<Route
+    path="/admin/student-id-card/:id"
+    element={
+        <ProtectedRoute>
+            <AdminStudentIDCard />
+        </ProtectedRoute>
+    }
 />
 <Route
   path="/event-details"

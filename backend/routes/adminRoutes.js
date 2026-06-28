@@ -27,6 +27,8 @@ const {
   allocateSeat,
 getSeatDetails,
 sendEventReminder,
+getStudentIDCard,
+ downloadRegister,
 } = require("../controllers/adminController");
 
 const {
@@ -53,7 +55,11 @@ router.get(
   adminAuth,
   getRecentActivities
 );
-
+router.get(
+  "/register/download/:id",
+  adminAuth,
+  downloadRegister
+);
 router.get(
   "/search",
   adminAuth,
@@ -145,5 +151,9 @@ router.get(
   adminAuth,
   getAllDocuments
 );
-
+router.get(
+  "/student-id-card/:id",
+  adminAuth,
+  getStudentIDCard
+);
 module.exports = router;
