@@ -70,7 +70,7 @@ function AppRoutes() {
 />
 <Route
   path="/verify/:convocationId"
-  element={<VerifyPage />}
+  element={<ProtectedRoute><VerifyPage /></ProtectedRoute>}
 />
 <Route
   path="/manage-events"
